@@ -11,7 +11,8 @@ using std::vector, std::stack, std::pair, std::cin, std::cout, std::endl, std::f
 vector<vector<int>> kosaraju_list(int n, const vector<pair<int, int>> &edges);
 vector<vector<int>> kosaraju_deque(int n, const vector<pair<int, int>> &edges);
 
-vector<vector<int>> kosaraju(int n, const vector<pair<int, int>> &edges);
-void newGraph(int &n, int &m);
-void Newedge(int i, int j, vector<pair<int, int>> &edges);
-void removeEdge(int i, int j, vector<pair<int, int>> &edges);
+//
+vector<vector<int>> kosaraju(int n, const vector<pair<int, int>> &edges);       // adapter
+void newGraph(vector<pair<int, int>> &edges, int clientSocket, char nums[256]); // new graph
+void Newedge(int i, int j, vector<pair<int, int>> &edges);                      // add edge
+void removeEdge(int i, int j, vector<pair<int, int>> &edges);                   // remove edge

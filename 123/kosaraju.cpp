@@ -4,24 +4,45 @@
 #include <list>
 #include <stack>
 #include <algorithm>
+#include <ostream>
+#include "kosaraju.hpp"
+#include <iostream>
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
 
 using namespace std;
-void dfs_list(int v, const vector<list<int>> &graph, vector<bool> &visited, stack<int> &finishStack)
+void newGraph(vector<pair<int, int>> &edges, int clientSocket, char nums[256])
 {
-    visited[v] = true;
-    for (int neighbor : graph[v])
+    int n, m;
+    const std::string message = "Enter the number of vertices and edges: \n";
+    write(clientSocket, message.data(), message.size());
+    fflush(stdout);
+    recv(clientSocket, nums, sizeof(nums), 0);
+
+    // parse nums to n and m
+    n = atoi(strtok(nums, " "));
+    m = atoi(strtok(NULL, " "));
+    std::cout << "n: " << n << " m: " << m << std::endl;
+    vector<pair<int, int>> edges(m);
+    const std::string message2 = "Enter the edges: ";
+    write(clientSocket, message2.data(), message2.size());
+    for (int i = 0; i < m; ++i)
     {
-        if (!visited[neighbor])
-        {
-            dfs_list(neighbor, graph, visited, finishStack);
-        }
+        int j, k;
+        const char *message4 = "Enter the edge v,u separated by space in the same line: ";
+        write(clientSocket, message4, strlen(message4));
+        recv(clientSocket, nums, sizeof(nums), 0);
+        j = atoi(strtok(nums, " "));
+        k = atoi(strtok(NULL, " "));
+        std::cout << "j: " << j << " k: " << k << std::endl; // not really relevent
+        Newedge(j, k, edges);
     }
-    finishStack.push(v);
-}
-void newGraph(int &n, int &m)
-{
-    cout << "Enter the number of vertices and edges: ";
-    cin >> n >> m;
 }
 void Newedge(int i, int j, vector<pair<int, int>> &edges)
 {
@@ -38,6 +59,25 @@ void removeEdge(int i, int j, vector<pair<int, int>> &edges)
         }
     }
 }
+
+vector<vector<int>> kosaraju(int n, const vector<pair<int, int>> &edges)
+{
+    return kosaraju_list(n, edges);
+}
+///////////////////////////////////////////////////////////////////////////////////
+void dfs_list(int v, const vector<list<int>> &graph, vector<bool> &visited, stack<int> &finishStack)
+{
+    visited[v] = true;
+    for (int neighbor : graph[v])
+    {
+        if (!visited[neighbor])
+        {
+            dfs_list(neighbor, graph, visited, finishStack);
+        }
+    }
+    finishStack.push(v);
+}
+
 void reverseDfs_list(int v, const vector<list<int>> &reverseGraph, vector<bool> &visited, vector<int> &component)
 {
     visited[v] = true;
@@ -151,8 +191,4 @@ vector<vector<int>> kosaraju_deque(int n, const vector<pair<int, int>> &edges)
     }
 
     return scc;
-}
-vector<vector<int>> kosaraju(int n, const vector<pair<int, int>> &edges)
-{
-    return kosaraju_list(n, edges);
 }

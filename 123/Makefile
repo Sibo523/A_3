@@ -17,7 +17,7 @@ all: $(TARGET)
 
 # Main program target
 $(TARGET): $(OBJ)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ -lpthread
 
 # Test target
 test: $(TEST_TARGET)
@@ -27,7 +27,7 @@ $(TEST_TARGET): $(TEST_OBJ)
 
 # To obtain object files
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@ 
 
 clean:
 	rm -f $(TARGET) $(TEST_TARGET) $(OBJ) $(TEST_OBJ) gmon.out
