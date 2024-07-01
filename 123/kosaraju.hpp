@@ -12,7 +12,7 @@ vector<vector<int>> kosaraju_list(int n, const vector<pair<int, int>> &edges);
 vector<vector<int>> kosaraju_deque(int n, const vector<pair<int, int>> &edges);
 
 //
-vector<vector<int>> kosaraju(int n, const vector<pair<int, int>> &edges);       // adapter
-void newGraph(vector<pair<int, int>> &edges, int clientSocket, char nums[256]); // new graph
-void Newedge(int i, int j, vector<pair<int, int>> &edges);                      // add edge
-void removeEdge(int i, int j, vector<pair<int, int>> &edges);                   // remove edge
+vector<vector<int>> kosaraju(int n, const vector<pair<int, int>> &edges);               // adapter
+void newGraph(vector<pair<int, int>> &edges, int clientSocket, char nums[256], int &n); // new graph
+void Newedge(vector<pair<int, int>> &edges, int clientsocket);                          // add edge
+void removeEdge(vector<pair<int, int>> &edges, int clientsocket);                       // remove edge

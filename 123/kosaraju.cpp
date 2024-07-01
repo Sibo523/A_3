@@ -15,23 +15,27 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
-
+std::mutex mtx;
 using namespace std;
-void newGraph(vector<pair<int, int>> &edges, int clientSocket, char nums[256])
+void input(vector<pair<int, int>> &edges, int clientsocket, int &i, int &j);
+void Newedge_helper(vector<pair<int, int>> &edges, int i, int j);
+
+void newGraph(vector<pair<int, int>> &edges, int clientSocket, char nums[256], int &n)
 {
-    int n, m;
+    std::lock_guard<std::mutex> lock(mtx);
+    int m;
     const std::string message = "Enter the number of vertices and edges: \n";
     write(clientSocket, message.data(), message.size());
-    fflush(stdout);
     recv(clientSocket, nums, sizeof(nums), 0);
 
     // parse nums to n and m
     n = atoi(strtok(nums, " "));
     m = atoi(strtok(NULL, " "));
     std::cout << "n: " << n << " m: " << m << std::endl;
-    vector<pair<int, int>> edges(m);
+    edges.resize(m);
     const std::string message2 = "Enter the edges: ";
     write(clientSocket, message2.data(), message2.size());
+
     for (int i = 0; i < m; ++i)
     {
         int j, k;
@@ -41,15 +45,16 @@ void newGraph(vector<pair<int, int>> &edges, int clientSocket, char nums[256])
         j = atoi(strtok(nums, " "));
         k = atoi(strtok(NULL, " "));
         std::cout << "j: " << j << " k: " << k << std::endl; // not really relevent
-        Newedge(j, k, edges);
+        Newedge_helper(edges, j, k);
     }
 }
-void Newedge(int i, int j, vector<pair<int, int>> &edges)
+
+void removeEdge(vector<pair<int, int>> &edges, int clientsocket)
 {
-    edges.push_back({i, j});
-}
-void removeEdge(int i, int j, vector<pair<int, int>> &edges)
-{
+    std::lock_guard<std::mutex> lock(mtx);
+    string msg = "Enter the edge to remove: ";
+    int i, j;
+    input(edges, clientsocket, i, j);
     for (int k = 0; k < edges.size(); k++)
     {
         if (edges[k].first == i && edges[k].second == j)
@@ -62,8 +67,31 @@ void removeEdge(int i, int j, vector<pair<int, int>> &edges)
 
 vector<vector<int>> kosaraju(int n, const vector<pair<int, int>> &edges)
 {
+    std::lock_guard<std::mutex> lock(mtx);
     return kosaraju_list(n, edges);
 }
+///////////////////////////////////////////////////////////////////////////////////////////
+void input(vector<pair<int, int>> &edges, int clientsocket, int &i, int &j)
+{
+    char nums[256];
+    string msg = "Enter the edge to add: ";
+    send(clientsocket, msg.data(), msg.size(), 0);
+    recv(clientsocket, nums, sizeof(nums), 0);
+    i = atoi(strtok(nums, " "));
+    j = atoi(strtok(NULL, " "));
+}
+void Newedge_helper(vector<pair<int, int>> &edges, int i, int j)
+{
+    edges.push_back({i, j}); // assuming it's valid
+    std::cout << "Edge added: " << i << " " << j << std::endl;
+}
+void Newedge(vector<pair<int, int>> &edges, int clientsock)
+{
+    int i, j;
+    input(edges, clientsock, i, j);
+    edges.push_back({i, j}); // assuming it's valid
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 void dfs_list(int v, const vector<list<int>> &graph, vector<bool> &visited, stack<int> &finishStack)
 {
