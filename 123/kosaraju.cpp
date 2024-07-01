@@ -18,7 +18,26 @@ void dfs_list(int v, const vector<list<int>> &graph, vector<bool> &visited, stac
     }
     finishStack.push(v);
 }
-
+void newGraph(int &n, int &m)
+{
+    cout << "Enter the number of vertices and edges: ";
+    cin >> n >> m;
+}
+void Newedge(int i, int j, vector<pair<int, int>> &edges)
+{
+    edges.push_back({i, j});
+}
+void removeEdge(int i, int j, vector<pair<int, int>> &edges)
+{
+    for (int k = 0; k < edges.size(); k++)
+    {
+        if (edges[k].first == i && edges[k].second == j)
+        {
+            edges.erase(edges.begin() + k);
+            return; // Assuming that the edge is unique
+        }
+    }
+}
 void reverseDfs_list(int v, const vector<list<int>> &reverseGraph, vector<bool> &visited, vector<int> &component)
 {
     visited[v] = true;
@@ -132,4 +151,8 @@ vector<vector<int>> kosaraju_deque(int n, const vector<pair<int, int>> &edges)
     }
 
     return scc;
+}
+vector<vector<int>> kosaraju(int n, const vector<pair<int, int>> &edges)
+{
+    return kosaraju_list(n, edges);
 }
