@@ -32,7 +32,7 @@ void newGraph(vector<pair<int, int>> &edges, int clientSocket, char nums[256], i
     n = atoi(strtok(nums, " "));
     m = atoi(strtok(NULL, " "));
     std::cout << "n: " << n << " m: " << m << std::endl;
-    edges.resize(m);
+    edges.clear();
     const std::string message2 = "Enter the edges: ";
     write(clientSocket, message2.data(), message2.size());
 
