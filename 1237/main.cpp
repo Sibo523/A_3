@@ -12,7 +12,34 @@
 #include <pthread.h>
 
 using namespace std;
+
 std::mutex mtxy;
+std::condition_variable cv;
+bool checkNeeded = false;
+vector<vector<int>> sccGlobal;
+int nGlobal;
+
+void checkLargeComponent()
+{
+    while (true)
+    {
+        std::unique_lock<std::mutex> lock(mtxy);
+        cv.wait(lock, []
+                { return checkNeeded; });
+
+        // Check if half or more nodes are in the same component
+        for (const auto &component : sccGlobal)
+        {
+            if (component.size() >= nGlobal / 2)
+            {
+                std::cout << "Half or more of the nodes are in the same component." << std::endl;
+                break;
+            }
+        }
+
+        checkNeeded = false; // Reset the flag
+    }
+}
 
 void ManuForUser(Proactor *proactor, int clientSocket, vector<pair<int, int>> &edges, int &n)
 {
@@ -75,6 +102,10 @@ void ManuForUser(Proactor *proactor, int clientSocket, vector<pair<int, int>> &e
                 std::string newline = "\n";                             // Correctly define newline as a string
                 send(clientSocket, newline.c_str(), newline.size(), 0); // Send the newline as a string
             }
+            sccGlobal = scc;
+            nGlobal = n;
+            checkNeeded = true;
+            cv.notify_one();
         }
         break;
         case EXIT:
@@ -96,7 +127,7 @@ int main()
     serverSocket = socket(PF_INET, SOCK_STREAM, 0);
 
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(1235);
+    serverAddr.sin_port = htons(1234);
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
 
@@ -109,6 +140,8 @@ int main()
 
     Proactor proactor;
 
+    std::thread checkerThread(checkLargeComponent);
+
     while (true)
     {
         addr_size = sizeof clientAddr;
@@ -118,6 +151,9 @@ int main()
         proactor.post(clientSocket, [&edges, &n](Proactor *proactor, int clientSocket)
                       { ManuForUser(proactor, clientSocket, edges, n); });
     }
+
+    // Cleanup
+    checkerThread.detach();
 
     return 0;
 }
