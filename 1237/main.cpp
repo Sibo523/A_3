@@ -1,4 +1,5 @@
 #include "kosaraju.hpp"
+#include "Proactor.hpp"
 #include <iostream>
 #include <vector>
 #include <thread>
@@ -9,10 +10,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+
 using namespace std;
 std::mutex mtxy;
 
-void ManuForUser(int clientSocket, vector<pair<int, int>> &edges, int &n)
+void ManuForUser(Proactor *proactor, int clientSocket, vector<pair<int, int>> &edges, int &n)
 {
     char num[256];
     enum
@@ -76,6 +78,7 @@ void ManuForUser(int clientSocket, vector<pair<int, int>> &edges, int &n)
         }
         break;
         case EXIT:
+            close(clientSocket);
             return;
         default:
             break;
@@ -93,7 +96,7 @@ int main()
     serverSocket = socket(PF_INET, SOCK_STREAM, 0);
 
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(1234);
+    serverAddr.sin_port = htons(1235);
     serverAddr.sin_addr.s_addr = INADDR_ANY;
     memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
 
@@ -104,13 +107,16 @@ int main()
     else
         cout << "Error" << endl;
 
+    Proactor proactor;
+
     while (true)
     {
         addr_size = sizeof clientAddr;
         clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addr_size);
         std::cout << "Connected" << std::endl;
 
-        thread(ManuForUser, clientSocket, std::ref(edges), std::ref(n)).detach();
+        proactor.post(clientSocket, [&edges, &n](Proactor *proactor, int clientSocket)
+                      { ManuForUser(proactor, clientSocket, edges, n); });
     }
 
     return 0;

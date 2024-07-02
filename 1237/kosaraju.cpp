@@ -55,7 +55,7 @@ void removeEdge(vector<pair<int, int>> &edges, int clientsocket)
     string msg = "Enter the edge to remove: ";
     int i, j;
     input(edges, clientsocket, i, j);
-    for (int k = 0; k < edges.size(); k++)
+    for (size_t k = 0; k < edges.size(); k++)
     {
         if (edges[k].first == i && edges[k].second == j)
         {
